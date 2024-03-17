@@ -22,7 +22,7 @@ function App() {
     event.preventDefault();
     // Handle search logic here
     console.log("Searching for:", searchTerm);
-    filterProducts(searchTerm);
+    setSearchTerm(searchTerm);
   };
 
   const handleItemClick = (item) => {
@@ -30,20 +30,26 @@ function App() {
     setIsOpen(false);
   };
 
-  const filterProducts = (searchTerm) => {
-    let filteredProducts = [];
-    if (selectedItem === "All Category") {
-      filteredProducts = products.filter(product =>
-        product.title.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    } else {
-      filteredProducts = products.filter(product =>
-        product.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        product.category.toLowerCase() === selectedItem.toLowerCase()
-      );
-    }
-    setFilteredProducts(filteredProducts);
-  };
+  useEffect(() => {
+    const filterAndSetProducts = () => {
+      let filteredProducts = [];
+      if (selectedItem === "All Category") {
+        filteredProducts = products.filter(product =>
+          product.title.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      } else {
+        filteredProducts = products.filter(product =>
+          product.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+          product.category.toLowerCase() === selectedItem.toLowerCase()
+        );
+      }
+      setFilteredProducts(filteredProducts);
+    };
+  
+    filterAndSetProducts(); // Call the function directly
+  
+  }, [searchTerm, selectedItem, products]); // Include all dependencies
+  
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -64,13 +70,6 @@ function App() {
     fetchProducts();
   }, [selectedItem]);
 
-  useEffect(() => {
-    setFilteredProducts(products);
-  }, [products]);
-
-  useEffect(() => {
-    filterProducts(searchTerm); // Update search results when search term changes
-  }, [searchTerm, selectedItem]);
 
   return (
     <>
