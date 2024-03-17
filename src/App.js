@@ -130,7 +130,7 @@ function App() {
                       </span> $ {product.price}</h2>
                   </div>
                   <div className=" mt-4 relative h-48 rounded overflow-hidden flex justify-center items-center">
-                    <img alt="ecommerce" className=" h-full block" src={product.image} />
+                    <img alt="ecommerce" className=" h-full block" src={product.image} preload />
                   </div>
                 </div>
               ))
