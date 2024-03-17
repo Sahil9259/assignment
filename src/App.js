@@ -6,6 +6,7 @@ function App() {
   const [selectedItem, setSelectedItem] = useState("All Category");
   const [searchTerm, setSearchTerm] = useState('');
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
 
   const items = [
     `men's clothing`,
@@ -17,44 +18,42 @@ function App() {
     setSearchTerm(event.target.value);
   };
 
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    // Handle search logic here
+    console.log("Searching for:", searchTerm);
+    filterProducts(searchTerm);
+  };
+
   const handleItemClick = (item) => {
     setSelectedItem(item);
     setIsOpen(false);
   };
-  useEffect(() => {
-    const filterProducts = (searchTerm) => {
-      let filteredProducts = [];    
-      if (searchTerm.trim() !== '' || searchTerm.trim() !== ' ') {
-        filteredProducts = products.filter(product =>
-          product.title.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      } else {
-        filteredProducts = [...products];
-      }
-      console.log(searchTerm);
-      if(!searchTerm){
-        setSelectedItem("All Category");
-      }else{
-        setProducts(filteredProducts);
-      }
-    };
 
-    filterProducts(searchTerm);
-  }, [searchTerm]);
-
-  
-  
+  const filterProducts = (searchTerm) => {
+    let filteredProducts = [];
+    if (selectedItem === "All Category") {
+      filteredProducts = products.filter(product =>
+        product.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    } else {
+      filteredProducts = products.filter(product =>
+        product.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        product.category.toLowerCase() === selectedItem.toLowerCase()
+      );
+    }
+    setFilteredProducts(filteredProducts);
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // console.log(selectedItem);
-        let response;
+        console.log(selectedItem);
         if (selectedItem === "All Category") {
-          response = await axios.get(`https://fakestoreapi.com/products`);
+          const response = await axios.get(`https://fakestoreapi.com/products`);
           setProducts(response.data);
         } else {
-          response = await axios.get(`https://fakestoreapi.com/products/category/${selectedItem}`);
+          const response = await axios.get(`https://fakestoreapi.com/products/category/${selectedItem}`);
           setProducts(response.data);
         }
       } catch (error) {
@@ -65,12 +64,19 @@ function App() {
     fetchProducts();
   }, [selectedItem]);
 
+  useEffect(() => {
+    setFilteredProducts(products);
+  }, [products]);
+
+  useEffect(() => {
+    filterProducts(searchTerm); // Update search results when search term changes
+  }, [searchTerm, selectedItem]);
 
   return (
     <>
       <header className="text-gray-600 body-font">
         <div className="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
-          <a href="/" className="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
+          <a className="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="w-10 h-10 text-white p-2 bg-indigo-500 rounded-full" viewBox="0 0 24 24">
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
             </svg>
@@ -98,22 +104,25 @@ function App() {
               </div>
             )}
           </div>
-          <div className="flex items-center">
+          <form onSubmit={handleSubmit} className="flex items-center">
             <input
               type="text"
               value={searchTerm}
-              onChange={handleInputChange}
+              onChange={handleInputChange} // Update search term on input change
               placeholder="Search..."
-              className="border border-gray-300 rounded-md px-4 py-2 mr-2 focus:outline-none focus:border-black-900"
+              className="border border-gray-300 rounded-md px-4 py-2 mr-2 focus:outline-none focus:border-blue-500"
             />
-          </div>
+            <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none">
+              Search
+            </button>
+          </form>
         </div>
       </header>
       <section className="text-gray-600 body-font">
         <div className="container px-5 py-24 mx-auto">
           <div className="flex flex-wrap text-center items-center justify-center -m-3">
-            {products && products.length > 0 ? (
-              products.map((product) => (
+            {filteredProducts && filteredProducts.length > 0 ? (
+              filteredProducts.map((product) => (
                 <div key={product.id} className="lg:w-1/4 md:w-1/2 p-4 mr-2 rounded border border-gray-200 shadow-md mb-4">
                   <div className="">
                     <h3 className="text-gray-900 title-font text-lg font-bold">{product.title}</h3>
